@@ -81,8 +81,10 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
     // configured runtime options
     RuntimeOptions opts(pool_size, interp, device, grid_size, block_size);
 
-    // create the thread-pool
+// create the thread-pool
+#if defined(TOMOPY_USE_OPENCV)
     opts.init();
+#endif
 
     START_TIMER(cxx_timer);
     TIMEMORY_AUTO_TIMER("");
@@ -90,25 +92,28 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
     printf("[%lu]> %s : nitr = %i, dy = %i, dt = %i, dx = %i, nx = %i, ny = %i\n", tid,
            __FUNCTION__, num_iter, dy, dt, dx, ngridx, ngridy);
 
-    try
+    if(opts.device.key == "gpu")
     {
-        if(opts.device.key == "gpu")
-        {
-            mlem_cuda(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
-                      &opts);
-        }
-        else
-        {
-            mlem_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
-                     &opts);
-        }
-    }
-    catch(std::exception& e)
-    {
-        AutoLock l(TypeMutex<decltype(std::cout)>());
-        std::cerr << "[TID: " << tid << "] " << e.what()
-                  << "\nFalling back to CPU algorithm..." << std::endl;
+#if defined(TOMOPY_USE_CUDA)
+        mlem_cuda(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
+                  &opts);
+#else
+        std::stringstream ss;
+        ss << "\n\n CUDA is not enabled."
+           << "\n\n";
         return EXIT_FAILURE;
+#endif
+    }
+    else
+    {
+#if defined(TOMOPY_USE_OPENCV)
+        mlem_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter, &opts);
+#else
+        std::stringstream ss;
+        ss << "\n\n OpenCV is not enabled."
+           << "\n\n";
+        return EXIT_FAILURE;
+#endif
     }
 
     registration.cleanup(&opts);
@@ -118,6 +123,8 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
 }
 
 //======================================================================================//
+
+#if defined(TOMOPY_USE_OPENCV)
 
 void
 mlem_cpu_compute_projection(data_array_t& cpu_data, int p, int dy, int dt, int dx, int nx,
@@ -230,15 +237,6 @@ mlem_cpu(const float* data, int dy, int dt, int dx, const float*, const float* t
 
     printf("\n");
 }
-
-//======================================================================================//
-#if !defined(TOMOPY_USE_CUDA)
-void
-mlem_cuda(const float* data, int dy, int dt, int dx, const float* center,
-          const float* theta, float* recon, int ngridx, int ngridy, int num_iter,
-          RuntimeOptions* opts)
-{
-    mlem_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter, opts);
-}
 #endif
+
 //======================================================================================//

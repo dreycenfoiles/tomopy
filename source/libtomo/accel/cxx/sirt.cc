@@ -81,7 +81,9 @@ cxx_sirt(const float* data, int dy, int dt, int dx, const float* center,
     RuntimeOptions opts(pool_size, interp, device, grid_size, block_size);
 
     // create the thread-pool
+#if defined(TOMOPY_USE_OPENCV)
     opts.init();
+#endif
 
     START_TIMER(cxx_timer);
     TIMEMORY_AUTO_TIMER("");
@@ -89,26 +91,28 @@ cxx_sirt(const float* data, int dy, int dt, int dx, const float* center,
     printf("[%lu]> %s : nitr = %i, dy = %i, dt = %i, dx = %i, nx = %i, ny = %i\n", tid,
            __FUNCTION__, num_iter, dy, dt, dx, ngridx, ngridy);
 
-    try
+    if(opts.device.key == "gpu")
     {
-        if(opts.device.key == "gpu")
-        {
-            sirt_cuda(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
-                      &opts);
-        }
-        else
-        {
-            sirt_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
-                     &opts);
-        }
-    }
-    catch(std::exception& e)
-    {
-        AutoLock l(TypeMutex<decltype(std::cout)>());
-        std::cerr << "[TID: " << tid << "] " << e.what()
-                  << "\nFalling back to CPU algorithm..." << std::endl;
-        // return failure code
+#if defined(TOMOPY_USE_CUDA)
+        sirt_cuda(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
+                  &opts);
+#else
+        std::stringstream ss;
+        ss << "\n\n CUDA is not enabled."
+           << "\n\n";
         return EXIT_FAILURE;
+#endif
+    }
+    else
+    {
+#if defined(TOMOPY_USE_OPENCV)
+        sirt_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter, &opts);
+#else
+        std::stringstream ss;
+        ss << "\n\n OpenCV is not enabled."
+           << "\n\n";
+        return EXIT_FAILURE;
+#endif
     }
 
     registration.cleanup(&opts);
@@ -119,6 +123,8 @@ cxx_sirt(const float* data, int dy, int dt, int dx, const float* center,
 }
 
 //======================================================================================//
+
+#if defined(TOMOPY_USE_OPENCV)
 
 void
 sirt_cpu_compute_projection(data_array_t& cpu_data, int p, int dy, int dt, int dx, int nx,
@@ -231,15 +237,6 @@ sirt_cpu(const float* data, int dy, int dt, int dx, const float*, const float* t
 
     printf("\n");
 }
-
-//======================================================================================//
-#if !defined(TOMOPY_USE_CUDA)
-void
-sirt_cuda(const float* data, int dy, int dt, int dx, const float* center,
-          const float* theta, float* recon, int ngridx, int ngridy, int num_iter,
-          RuntimeOptions* opts)
-{
-    sirt_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter, opts);
-}
 #endif
+
 //======================================================================================//

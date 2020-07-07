@@ -49,6 +49,8 @@ BEGIN_EXTERN_C
 #include "cxx_extern.h"
 END_EXTERN_C
 
+#if defined(TOMOPY_USE_OPENCV)
+
 //--------------------------------------------------------------------------------------//
 #if defined(WIN32)
 #    define _Complex
@@ -186,6 +188,8 @@ cxx_compute_sum_dist(int dy, int dt, int dx, int nx, int ny, const float* theta)
 
     return sum_dist;
 }
+
+#endif
 
 //======================================================================================//
 //
