@@ -1,10 +1,11 @@
 # target properties based on build
-
 file(GLOB accel_sources
     ${CMAKE_CURRENT_LIST_DIR}/cxx/*.cc)
+
 set(ACCEL_LIBRARY_SOURCES ${accel_sources})
 
 if(TOMOPY_USE_CUDA)
+
     file(GLOB CUDA_LIBRARY_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/gpu/*.cu)
 
@@ -12,7 +13,8 @@ if(TOMOPY_USE_CUDA)
     
     list(APPEND TARGET_INCLUDE_DIRECTORIES
         ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
-endif()
+
+endif(TOMOPY_USE_CUDA)
 
 add_library(libtomopy-accel SHARED ${ACCEL_LIBRARY_SOURCES})
 
@@ -52,6 +54,3 @@ target_compile_options(libtomopy-accel PUBLIC
 install(TARGETS libtomopy-accel
     DESTINATION ${PYTHON_SITE_DIR}/tomopy/sharedlibs
     COMPONENT python)
-
-
-
