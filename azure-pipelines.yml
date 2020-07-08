@@ -45,12 +45,12 @@ jobs:
     displayName: Create build environment
   - script: |
       source activate tomopy
-      python setup.py install --enable-cuda
+      python setup.py install --enable-cuda --build-type=Debug
     displayName: Setup and install
   - script: |
       source activate tomopy
       export CUDA_VERSION="$(CUDA_VERSION)"
-      nosetests
+      gdb -ex r --args python -m pytest
     displayName: nosetests
 
 - job: Linux

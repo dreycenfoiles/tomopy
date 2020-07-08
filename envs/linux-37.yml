@@ -7,6 +7,7 @@ dependencies:
   - coverage!=5.0.2
   - dxchange
   - gcc_linux-64
+  - gdb
   - git
   - gxx_linux-64
   - h5py
