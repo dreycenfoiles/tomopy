@@ -55,6 +55,8 @@ END_EXTERN_C
 
 // get a unique pointer to a thread-pool
 //
+#if defined(TOMOPY_USE_OPENCV)
+
 inline void
 CreateThreadPool(unique_thread_pool_t& tp, num_threads_t& pool_size)
 {
@@ -113,6 +115,8 @@ CreateThreadPool(unique_thread_pool_t& tp, num_threads_t& pool_size)
               << " threads..." << std::endl;
 #endif
 }
+
+#endif
 
 //======================================================================================//
 //  This class enables the selection of a device at runtime

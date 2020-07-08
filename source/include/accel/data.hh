@@ -94,9 +94,11 @@ struct RuntimeOptions
     RuntimeOptions(const RuntimeOptions&) = delete;
     RuntimeOptions& operator=(const RuntimeOptions&) = delete;
 
-    // create the thread pool -- don't have this in the constructor
-    // because you don't want to arbitrarily create thread-pools
+// create the thread pool -- don't have this in the constructor
+// because you don't want to arbitrarily create thread-pools
+#if defined(TOMOPY_USE_OPENCV)
     void init() { CreateThreadPool(thread_pool, pool_size); }
+#endif
 
     // invoke the generic printer defined in common.hh
     template <typename... _Descriptions, typename... _Objects>

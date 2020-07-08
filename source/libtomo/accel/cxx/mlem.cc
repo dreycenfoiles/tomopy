@@ -81,8 +81,10 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
     // configured runtime options
     RuntimeOptions opts(pool_size, interp, device, grid_size, block_size);
 
-    // create the thread-pool
+// create the thread-pool
+#if defined(TOMOPY_USE_OPENCV)
     opts.init();
+#endif
 
     START_TIMER(cxx_timer);
     TIMEMORY_AUTO_TIMER("");
@@ -90,7 +92,7 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
     printf("[%lu]> %s : nitr = %i, dy = %i, dt = %i, dx = %i, nx = %i, ny = %i\n", tid,
            __FUNCTION__, num_iter, dy, dt, dx, ngridx, ngridy);
 
-    try
+    if(opts.device.key == "gpu")
     {
         if(opts.device.key == "gpu")
         {
@@ -107,12 +109,16 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
 #endif
         }
     }
-    catch(std::exception& e)
+    else
     {
-        AutoLock l(TypeMutex<decltype(std::cout)>());
-        std::cerr << "[TID: " << tid << "] " << e.what()
-                  << "\nFalling back to CPU algorithm..." << std::endl;
+#if defined(TOMOPY_USE_OPENCV)
+        mlem_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter, &opts);
+#else
+        std::stringstream ss;
+        ss << "\n\n OpenCV is not enabled."
+           << "\n\n";
         return EXIT_FAILURE;
+#endif
     }
 
     registration.cleanup(&opts);

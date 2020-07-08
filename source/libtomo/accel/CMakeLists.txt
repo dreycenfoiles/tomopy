@@ -1,5 +1,4 @@
 # target properties based on build
-
 file(GLOB accel_sources
     ${CMAKE_CURRENT_LIST_DIR}/cxx/*.cc)
 
@@ -55,6 +54,3 @@ target_compile_options(libtomopy-accel PUBLIC
 install(TARGETS libtomopy-accel
     DESTINATION ${PYTHON_SITE_DIR}/tomopy/sharedlibs
     COMPONENT python)
-
-
-
