@@ -12,6 +12,7 @@ set(_USE_OMP ON)
 set(_USE_CUDA ON)
 set(_USE_CXX_GRIDREC OFF)
 set(_USE_MKL ON)
+set(_USE_OPENCV ON)
 
 # if Windows MSVC compiler, use C++ version of gridrec
 if(WIN32)
@@ -35,6 +36,23 @@ if(CUDA_FOUND)
     endif()
 else()
     set(_USE_CUDA OFF)
+endif()
+
+################################################################################
+#
+#        OpenCV (required for CPU acceleration)
+#
+################################################################################
+
+set(OpenCV_COMPONENTS opencv_core opencv_imgproc)
+find_package(OpenCV QUIET COMPONENTS ${OpenCV_COMPONENTS})
+if (OpenCV_FOUND)
+    list(APPEND EXTERNAL_LIBRARIES ${OpenCV_LIBRARIES})
+elseif(TOMOPY_USE_OPENCV)
+    message(FATAL_ERROR "OpenCV not found. Aborting build.")
+else()
+    message(WARNING "OpenCV not found. CPU acceleration will be disabled.")
+    set(_USE_OPENCV OFF)
 endif()
 
 ################################################################################
@@ -72,7 +90,7 @@ endif()
 add_option(TOMOPY_USE_GPERF "Enable using Google perftools profiler" OFF)
 add_option(TOMOPY_USE_TIMEMORY "Enable TiMemory for timing+memory analysis" OFF)
 add_option(TOMOPY_USE_OPENMP "Enable OpenMP (for SIMD -- GNU will enable without this setting)" ${_USE_OMP})
-add_option(TOMOPY_USE_OPENCV "Enable OpenCV for image processing" ON)
+add_option(TOMOPY_USE_OPENCV "Enable OpenCV for image processing" ${_USE_OPENCV})
 add_option(TOMOPY_USE_ARCH "Enable architecture specific flags" OFF)
 add_option(TOMOPY_USE_SANITIZER "Enable sanitizer" OFF)
 add_option(TOMOPY_CXX_GRIDREC "Enable gridrec with C++ std::complex" ${_USE_CXX_GRIDREC})
