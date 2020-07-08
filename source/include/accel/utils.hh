@@ -56,6 +56,8 @@ END_EXTERN_C
 #    define _Complex
 #endif
 
+#if defined(TOMOPY_USE_OPENCV)
+
 #define CPU_NN CV_INTER_NN
 #define CPU_LINEAR CV_INTER_LINEAR
 #define CPU_AREA CV_INTER_AREA
@@ -188,6 +190,7 @@ cxx_compute_sum_dist(int dy, int dt, int dx, int nx, int ny, const float* theta)
 
     return sum_dist;
 }
+#endif // TOMOPY_USE_OPENCV
 
 #endif
 

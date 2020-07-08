@@ -94,15 +94,20 @@ cxx_mlem(const float* data, int dy, int dt, int dx, const float* center,
 
     if(opts.device.key == "gpu")
     {
+        if(opts.device.key == "gpu")
+        {
 #if defined(TOMOPY_USE_CUDA)
-        mlem_cuda(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
-                  &opts);
-#else
-        std::stringstream ss;
-        ss << "\n\n CUDA is not enabled."
-           << "\n\n";
-        return EXIT_FAILURE;
+            mlem_cuda(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
+                      &opts);
 #endif
+        }
+        else
+        {
+#if defined(TOMOPY_USE_OPENCV)
+            mlem_cpu(data, dy, dt, dx, center, theta, recon, ngridx, ngridy, num_iter,
+                     &opts);
+#endif
+        }
     }
     else
     {
@@ -237,6 +242,5 @@ mlem_cpu(const float* data, int dy, int dt, int dx, const float*, const float* t
 
     printf("\n");
 }
-#endif
 
-//======================================================================================//
+#endif // TOMOPY_USE_OPENCV
