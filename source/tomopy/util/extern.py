@@ -126,6 +126,12 @@ LIB_TOMOPY_ACCEL = c_shared_lib("libtomopy-accel")
 LIB_TOMOPY_GRIDREC = c_shared_lib("libtomopy-gridrec")
 
 
+def MissingLibrary(function):
+    print(f"The {function} algorithm is unavailable."
+          " Check CMake logs to determine if TomoPy was"
+          " built with dependencies required by this algorithm.")
+
+
 def c_normalize_bg(tomo, air):
     dt, dy, dx = tomo.shape
 
@@ -349,6 +355,10 @@ def c_fbp(tomo, center, recon, theta, **kwargs):
 
 
 def c_gridrec(tomo, center, recon, theta, **kwargs):
+
+    if LIB_TOMOPY_GRIDREC is None:
+        return MissingLibrary("gridrec")
+
     if len(tomo.shape) == 2:
         # no y-axis (only one slice)
         dy = 1
@@ -382,7 +392,6 @@ def c_mlem(tomo, center, recon, theta, **kwargs):
     use_accel = 1 if kwargs['accelerated'] else 0
 
     if use_accel:
-        LIB_TOMOPY_ACCEL.cxx_mlem.restype = dtype.as_c_void_p()
         return LIB_TOMOPY_ACCEL.cxx_mlem(
             dtype.as_c_float_p(tomo),
             dtype.as_c_int(dy),
@@ -545,8 +554,6 @@ def c_sirt(tomo, center, recon, theta, **kwargs):
     use_accel = 1 if kwargs['accelerated'] else 0
 
     if use_accel:
-
-        LIB_TOMOPY_ACCEL.cxx_sirt.restype = dtype.as_c_void_p()
         return LIB_TOMOPY_ACCEL.cxx_sirt(
             dtype.as_c_float_p(tomo),
             dtype.as_c_int(dy),

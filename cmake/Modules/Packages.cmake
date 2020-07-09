@@ -40,31 +40,17 @@ if(PYTHON_EXECUTABLE)
         ${PYTHON_ROOT_DIR}/include)
 endif()
 
-
 ################################################################################
 #
-#        MKL (required)
+#        OpenCV (required for CPU acceleration)
 #
 ################################################################################
 
-find_package(MKL REQUIRED)
-
-if(MKL_FOUND)
-    list(APPEND EXTERNAL_INCLUDE_DIRS ${MKL_INCLUDE_DIRS})
-    list(APPEND EXTERNAL_LIBRARIES ${MKL_LIBRARIES})
+if(False)
+    set(OpenCV_COMPONENTS opencv_core opencv_imgproc)
+    find_package(OpenCV REQUIRED COMPONENTS ${OpenCV_COMPONENTS})
+    list(APPEND EXTERNAL_LIBRARIES ${OpenCV_LIBRARIES})
 endif()
-
-
-################################################################################
-#
-#        OpenCV (required)
-#
-################################################################################
-
-set(OpenCV_COMPONENTS opencv_core opencv_imgproc)
-find_package(OpenCV REQUIRED COMPONENTS ${OpenCV_COMPONENTS})
-list(APPEND EXTERNAL_LIBRARIES ${OpenCV_LIBRARIES})
-
 
 ################################################################################
 #
