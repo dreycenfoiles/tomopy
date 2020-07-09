@@ -42,6 +42,7 @@
 #include "constants.hh"
 #include "macros.hh"
 #include "typedefs.hh"
+#include <stdexcept>
 
 BEGIN_EXTERN_C
 #include "cxx_extern.h"
@@ -242,8 +243,12 @@ GetDevice(const std::string& preferred)
 {
     auto pythreads               = GetEnv("TOMOPY_PYTHON_THREADS", HW_CONCURRENCY);
     using DeviceOptionList       = std::deque<DeviceOption>;
-    DeviceOptionList options     = { DeviceOption(0, "cpu", "Run on CPU (OpenCV)") };
+    DeviceOptionList options     = { };
     std::string      default_key = "cpu";
+
+#if defined(TOMOPY_USE_OPENCV)
+    options.push_back(DeviceOption(0, "cpu", "Run on CPU (OpenCV)"));
+# endif
 
 #if defined(TOMOPY_USE_CUDA)
     auto num_devices = cuda_device_count();
@@ -264,6 +269,11 @@ GetDevice(const std::string& preferred)
         std::cerr << "\n##### No CUDA device(s) available #####\n" << std::endl;
     }
 #endif
+
+    if (options.empty()){
+        throw std::runtime_error("No devices found! Check that TomoPy was "
+                                 "compiled with OpenCV or CUDA.");
+    }
 
     // find the default entry
     auto default_itr =
